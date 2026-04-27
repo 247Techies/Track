@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MotoTrack — Motorcycle Maintenance Hub</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #151820;
+    --surface2: #1c2030;
+    --surface3: #242840;
+    --border: #2a2f45;
+    --accent: #ff5c1a;
+    --accent2: #ffa040;
+    --accent-glow: rgba(255,92,26,0.18);
+    --text: #e8eaf0;
+    --muted: #7a80a0;
+    --success: #22d87a;
+    --warning: #f5c542;
+    --danger: #ff4466;
+    --info: #38b2f8;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    line-height: 1;
+  }
+  .logo span { color: var(--text); }
+  .logo i { font-size: 1.4rem; color: var(--accent); }
+
+  /* SIDEBAR */
+  .app-shell { display: flex; min-height: calc(100vh - 60px); }
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    position: sticky;
+    top: 60px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 20px;
+    cursor: pointer;
+    color: var(--muted);
+    font-weight: 500;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+    transition: all .18s;
+    user-select: none;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-glow); }
+  .nav-item i { font-size: 1.15rem; width: 20px; text-align: center; }
+
+  /* MAIN */
+  .main { flex: 1; padding: 28px 32px; overflow-x: hidden; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeUp .3s ease; }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  /* PAGE HEADER */
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    letter-spacing: 1.5px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .page-header p { color: var(--muted); margin-top: 6px; }
+
+  /* CARDS */
+  .card-dark {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .card-dark .card-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-dark .card-title i { color: var(--accent); }
+
+  /* STAT BOX */
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-box::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 0 0 10px 10px;
+  }
+  .stat-box.info::before { background: var(--info); }
+  .stat-box.success::before { background: var(--success); }
+  .stat-box.warning::before { background: var(--warning); }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .6px; }
+  .stat-val { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 600; color: var(--text); margin-top: 4px; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* RENEWAL CARDS */
+  .renewal-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s;
+  }
+  .renewal-card.urgent { border-color: var(--danger); }
+  .renewal-card.soon { border-color: var(--warning); }
+  .renewal-card.ok { border-color: var(--success); }
+  .renewal-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .renewal-icon.urgent { background: rgba(255,68,102,.15); color: var(--danger); }
+  .renewal-icon.soon { background: rgba(245,197,66,.15); color: var(--warning); }
+  .renewal-icon.ok { background: rgba(34,216,122,.15); color: var(--success); }
+  .renewal-info { flex: 1; }
+  .renewal-name { font-weight: 600; font-size: 15px; }
+  .renewal-date { font-size: 13px; color: var(--muted); margin-top: 1px; }
+  .countdown-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .countdown-badge.urgent { background: rgba(255,68,102,.18); color: var(--danger); }
+  .countdown-badge.soon { background: rgba(245,197,66,.18); color: var(--warning); }
+  .countdown-badge.ok { background: rgba(34,216,122,.18); color: var(--success); }
+
+  /* TABLE */
+  .moto-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+  .moto-table thead th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .8px;
+    color: var(--muted); font-weight: 600; padding: 8px 14px;
+    background: transparent; border: none;
+  }
+  .moto-table tbody tr td {
+    background: var(--surface2);
+    padding: 12px 14px;
+    border: none;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+  .moto-table tbody tr td:first-child { border-radius: 8px 0 0 8px; }
+  .moto-table tbody tr td:last-child { border-radius: 0 8px 8px 0; }
+  .moto-table tbody tr:hover td { background: var(--surface3); }
+  .odo-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--surface3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    color: var(--accent2);
+    border: 1px solid var(--border);
+  }
+
+  /* BUTTONS */
+  .btn-accent {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all .18s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .btn-accent:hover { background: var(--accent2); color: #000; transform: translateY(-1px); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-danger-ghost {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(255,68,102,.3);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .btn-danger-ghost:hover { background: rgba(255,68,102,.12); }
+
+  /* FORMS */
+  .form-label { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: .5px; }
+  .form-ctrl {
+    width: 100%;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    transition: border-color .18s;
+    outline: none;
+  }
+  .form-ctrl:focus { border-color: var(--accent); }
+  .form-ctrl option { background: var(--surface); }
+  textarea.form-ctrl { resize: vertical; min-height: 80px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(.95);
+    transition: transform .2s;
+  }
+  .modal-overlay.open .modal-box { transform: scale(1); }
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; transition: color .18s; }
+  .modal-close:hover { color: var(--danger); }
+
+  /* BIKE HERO */
+  .bike-hero {
+    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .bike-hero::after {
+    content: '\F574';
+    font-family: 'bootstrap-icons';
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 9rem;
+    color: var(--accent);
+    opacity: .06;
+  }
+  .bike-name { font-family: var(--font-display); font-size: 2.4rem; letter-spacing: 2px; line-height: 1; color: var(--text); }
+  .bike-reg { font-family: var(--font-mono); font-size: 1.1rem; color: var(--accent); margin-top: 4px; }
+  .bike-meta { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  .bike-meta-item { display: flex; flex-direction: column; }
+  .bike-meta-label { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 600; }
+  .bike-meta-val { font-family: var(--font-mono); font-size: 1rem; color: var(--text); margin-top: 2px; }
+
+  /* EXPENSE BADGE */
+  .exp-category {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .exp-service { background: rgba(56,178,248,.15); color: var(--info); }
+  .exp-parts { background: rgba(255,92,26,.15); color: var(--accent); }
+  .exp-fuel { background: rgba(245,197,66,.15); color: var(--warning); }
+  .exp-other { background: rgba(122,128,160,.15); color: var(--muted); }
+
+  /* CHART AREA */
+  .chart-bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
+  .chart-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .chart-bar {
+    width: 100%;
+    background: var(--accent);
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: height .5s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .chart-bar:hover { background: var(--accent2); }
+  .chart-bar-label { font-size: 10px; color: var(--muted); }
+  .chart-bar-val { font-family: var(--font-mono); font-size: 10px; color: var(--accent2); }
+
+  /* PROGRESS RING */
+  .ring-wrap { position: relative; width: 80px; height: 80px; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .ring-text small { font-size: 9px; color: var(--muted); font-weight: 400; }
+
+  /* SECTION DIVIDER */
+  .sec-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 700;
+    margin: 20px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .empty-state i { font-size: 3rem; opacity: .3; display: block; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+    .bike-name { font-size: 1.6rem; }
+  }
+
+  /* TOAST */
+  .toast-wrap {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 9999;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .toast-msg {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--success);
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 14px;
+    color: var(--text);
+    animation: slideIn .3s ease, fadeOut .3s ease 2.7s forwards;
+    min-width: 220px;
+  }
+  .toast-msg.err { border-left-color: var(--danger); }
+  @keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+  @keyframes fadeOut { to { opacity:0; transform:translateX(100%); } }
+
+  .gap-field { margin-bottom: 16px; }
+  .row-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .summary-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface3); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px;
+    font-family: var(--font-mono); font-size: 12px; color: var(--accent2);
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><i class="bi bi-motorcycle"></i>MOTO<span>TRACK</span></div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <span id="topOdo" class="summary-pill"><i class="bi bi-speedometer2"></i> — km</span>
+    <button class="btn-accent" onclick="openModal('modal-bike')"><i class="bi bi-pencil-square"></i> Edit Bike</button>
+  </div>
+</div>
+
+<!-- SHELL -->
+<div class="app-shell">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-item active" data-page="dashboard"><i class="bi bi-grid-1x2-fill"></i> Dashboard</div>
+    <div class="nav-item" data-page="renewals"><i class="bi bi-calendar-check-fill"></i> Renewals</div>
+    <div class="nav-item" data-page="service"><i class="bi bi-wrench-adjustable-circle-fill"></i> Service Log</div>
+    <div class="nav-item" data-page="expenses"><i class="bi bi-receipt-cutoff"></i> Expenses</div>
+    <div class="nav-item" data-page="reports"><i class="bi bi-bar-chart-fill"></i> Reports</div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h2>DASHBOARD</h2>
+        <p>Quick overview of your motorcycle status</p>
+      </div>
+
+      <!-- BIKE HERO -->
+      <div class="bike-hero" id="bikeHero">
+        <div class="bike-name" id="heroName">MY MOTORCYCLE</div>
+        <div class="bike-reg" id="heroReg">—</div>
+        <div class="bike-meta">
+          <div class="bike-meta-item"><span class="bike-meta-label">Make / Model</span><span class="bike-meta-val" id="heroModel">—</span></div>
+          <div class="bike-meta-item"><span class="bike-meta-label">Year</span><span class="bike-meta-val" id="heroYear">—</span></div>
+          <div class="bike-meta-item"><span class="bike-meta-label">Engine</span><span class="bike-meta-val" id="heroEngine">—</span></div>
+          <div class="bike-meta-item"><span class="bike-meta-label">Color</span><span class="bike-meta-val" id="heroColor">—</span></div>
+          <div class="bike-meta-item"><span class="bike-meta-label">Current ODO</span><span class="bike-meta-val" id="heroOdo">— km</span></div>
+        </div>
+      </div>
+
+      <!-- STAT BOXES -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="stat-box">
+            <div class="stat-label">Total Services</div>
+            <div class="stat-val" id="statServices">0</div>
+            <div class="stat-sub">logged records</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-box info">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-val" id="statTotal">Rs.0</div>
+            <div class="stat-sub">all expenses</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-box success">
+            <div class="stat-label">Next Service</div>
+            <div class="stat-val" id="statNextSvc">—</div>
+            <div class="stat-sub">km remaining</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="stat-box warning">
+            <div class="stat-label">Renewals Due</div>
+            <div class="stat-val" id="statRenewDue">0</div>
+            <div class="stat-sub">within 30 days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPCOMING RENEWALS PREVIEW -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-dark">
+            <div class="card-title"><i class="bi bi-bell-fill"></i> UPCOMING RENEWALS</div>
+            <div id="dashRenewals"><div class="empty-state"><i class="bi bi-calendar-x"></i><p>No renewals added yet</p></div></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-dark">
+            <div class="card-title"><i class="bi bi-clock-history"></i> RECENT SERVICES</div>
+            <div id="dashServices"><div class="empty-state"><i class="bi bi-tools"></i><p>No service records yet</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RENEWALS -->
+    <div class="page" id="page-renewals">
+      <div class="page-header">
+        <h2>RENEWALS</h2>
+        <p>Track license, emission test, insurance and more</p>
+      </div>
+      <div style="margin-bottom:20px;">
+        <button class="btn-accent" onclick="openModal('modal-renewal')"><i class="bi bi-plus-lg"></i> Add Renewal</button>
+      </div>
+      <div id="renewalList"></div>
+    </div>
+
+    <!-- SERVICE LOG -->
+    <div class="page" id="page-service">
+      <div class="page-header">
+        <h2>SERVICE LOG</h2>
+        <p>Every maintenance visit, tracked with ODO readings</p>
+      </div>
+      <div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-accent" onclick="openModal('modal-service')"><i class="bi bi-plus-lg"></i> Add Service</button>
+        <span id="lastSvcInfo" class="summary-pill" style="display:none;"><i class="bi bi-wrench"></i> Last: <span id="lastSvcKm"></span> km</span>
+      </div>
+      <div class="card-dark">
+        <div class="card-title"><i class="bi bi-journal-text"></i> SERVICE HISTORY</div>
+        <div id="serviceTableWrap">
+          <div class="empty-state"><i class="bi bi-tools"></i><p>No service records. Add your first one!</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="page" id="page-expenses">
+      <div class="page-header">
+        <h2>EXPENSES</h2>
+        <p>Parts, labour, fuel and other maintenance costs</p>
+      </div>
+      <div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-accent" onclick="openModal('modal-expense')"><i class="bi bi-plus-lg"></i> Add Expense</button>
+        <span class="summary-pill"><i class="bi bi-cash-stack"></i> Total: <span id="expTotal2">Rs.0</span></span>
+      </div>
+      <div class="card-dark">
+        <div class="card-title"><i class="bi bi-receipt"></i> EXPENSE RECORDS</div>
+        <div id="expenseTableWrap">
+          <div class="empty-state"><i class="bi bi-wallet2"></i><p>No expenses recorded yet</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="page-header">
+        <h2>REPORTS</h2>
+        <p>Visual insights into your maintenance data</p>
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card-dark" style="height:100%;">
+            <div class="card-title"><i class="bi bi-pie-chart-fill"></i> EXPENSE BREAKDOWN</div>
+            <div id="expBreakdown" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"></div>
+          </div>
+        </div>
+        <div class="col-md-8">
+          <div class="card-dark" style="height:100%;">
+            <div class="card-title"><i class="bi bi-graph-up"></i> MONTHLY SPENDING</div>
+            <div id="monthlyChart"></div>
+          </div>
+        </div>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-dark">
+            <div class="card-title"><i class="bi bi-card-list"></i> SERVICE SUMMARY</div>
+            <div id="svcSummary"></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-dark">
+            <div class="card-title"><i class="bi bi-shield-check"></i> RENEWAL STATUS</div>
+            <div id="renewSummary"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ======= MODALS ======= -->
+
+<!-- BIKE MODAL -->
+<div class="modal-overlay" id="modal-bike">
+  <div class="modal-box">
+    <div class="modal-title">BIKE INFO <button class="modal-close" onclick="closeModal('modal-bike')"><i class="bi bi-x-lg"></i></button></div>
+    <div class="gap-field"><label class="form-label">Nickname / Name</label><input class="form-ctrl" id="b-name" placeholder="e.g. Black Thunder"></div>
+    <div class="row-fields">
+      <div><label class="form-label">Make</label><input class="form-ctrl" id="b-make" placeholder="Honda"></div>
+      <div><label class="form-label">Model</label><input class="form-ctrl" id="b-model" placeholder="CB150R"></div>
+    </div>
+    <div class="row-fields" style="margin-top:14px;">
+      <div><label class="form-label">Year</label><input class="form-ctrl" id="b-year" type="number" placeholder="2020"></div>
+      <div><label class="form-label">Engine CC</label><input class="form-ctrl" id="b-engine" placeholder="150cc"></div>
+    </div>
+    <div class="row-fields" style="margin-top:14px;">
+      <div><label class="form-label">Registration No.</label><input class="form-ctrl" id="b-reg" placeholder="CAP-1234"></div>
+      <div><label class="form-label">Color</label><input class="form-ctrl" id="b-color" placeholder="Matte Black"></div>
+    </div>
+    <div class="row-fields" style="margin-top:14px;">
+      <div><label class="form-label">Current ODO (km)</label><input class="form-ctrl" id="b-odo" type="number" placeholder="12500"></div>
+      <div><label class="form-label">Next Service at (km)</label><input class="form-ctrl" id="b-nextsvc" type="number" placeholder="14000"></div>
+    </div>
+    <div class="gap-field" style="margin-top:14px;"><label class="form-label">VIN / Chassis No.</label><input class="form-ctrl" id="b-vin" placeholder="Optional"></div>
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <button class="btn-accent" onclick="saveBike()"><i class="bi bi-check-lg"></i> Save</button>
+      <button class="btn-ghost" onclick="closeModal('modal-bike')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENEWAL MODAL -->
+<div class="modal-overlay" id="modal-renewal">
+  <div class="modal-box">
+    <div class="modal-title">ADD RENEWAL <button class="modal-close" onclick="closeModal('modal-renewal')"><i class="bi bi-x-lg"></i></button></div>
+    <div class="gap-field"><label class="form-label">Type</label>
+      <select class="form-ctrl" id="r-type">
+        <option>Revenue Licence</option>
+        <option>Emission Test</option>
+        <option>Insurance</option>
+        <option>Registration</option>
+        <option>VET / Safety Check</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="gap-field"><label class="form-label">Custom Name (optional)</label><input class="form-ctrl" id="r-name" placeholder="Leave blank to use type"></div>
+    <div class="row-fields">
+      <div><label class="form-label">Due Date</label><input class="form-ctrl" id="r-due" type="date"></div>
+      <div><label class="form-label">Renewal Cost (Rs.)</label><input class="form-ctrl" id="r-cost" type="number" placeholder="0"></div>
+    </div>
+    <div class="gap-field" style="margin-top:14px;"><label class="form-label">Notes</label><textarea class="form-ctrl" id="r-notes" placeholder="Any additional notes..."></textarea></div>
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <button class="btn-accent" onclick="saveRenewal()"><i class="bi bi-check-lg"></i> Save</button>
+      <button class="btn-ghost" onclick="closeModal('modal-renewal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE MODAL -->
+<div class="modal-overlay" id="modal-service">
+  <div class="modal-box">
+    <div class="modal-title">ADD SERVICE <button class="modal-close" onclick="closeModal('modal-service')"><i class="bi bi-x-lg"></i></button></div>
+    <div class="row-fields">
+      <div><label class="form-label">Date</label><input class="form-ctrl" id="s-date" type="date"></div>
+      <div><label class="form-label">ODO at Service (km)</label><input class="form-ctrl" id="s-odo" type="number" placeholder="12500"></div>
+    </div>
+    <div class="gap-field" style="margin-top:14px;"><label class="form-label">Service Type</label>
+      <select class="form-ctrl" id="s-type">
+        <option>Full Service</option>
+        <option>Oil Change</option>
+        <option>Brake Service</option>
+        <option>Tyre Change</option>
+        <option>Chain Service</option>
+        <option>Air Filter</option>
+        <option>Spark Plug</option>
+        <option>General Checkup</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="gap-field"><label class="form-label">Workshop / Location</label><input class="form-ctrl" id="s-shop" placeholder="e.g. Honda Authorized Service"></div>
+    <div class="row-fields">
+      <div><label class="form-label">Labour Cost (Rs.)</label><input class="form-ctrl" id="s-labour" type="number" placeholder="0"></div>
+      <div><label class="form-label">Parts Cost (Rs.)</label><input class="form-ctrl" id="s-parts" type="number" placeholder="0"></div>
+    </div>
+    <div class="gap-field" style="margin-top:14px;"><label class="form-label">Next Service Due (km)</label><input class="form-ctrl" id="s-nextodo" type="number" placeholder="Optional"></div>
+    <div class="gap-field"><label class="form-label">Notes</label><textarea class="form-ctrl" id="s-notes" placeholder="Work done, observations..."></textarea></div>
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <button class="btn-accent" onclick="saveService()"><i class="bi bi-check-lg"></i> Save</button>
+      <button class="btn-ghost" onclick="closeModal('modal-service')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="modal-expense">
+  <div class="modal-box">
+    <div class="modal-title">ADD EXPENSE <button class="modal-close" onclick="closeModal('modal-expense')"><i class="bi bi-x-lg"></i></button></div>
+    <div class="row-fields">
+      <div><label class="form-label">Date</label><input class="form-ctrl" id="e-date" type="date"></div>
+      <div><label class="form-label">Category</label>
+        <select class="form-ctrl" id="e-cat">
+          <option value="service">Service / Labour</option>
+          <option value="parts">Parts / Accessories</option>
+          <option value="fuel">Fuel</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="gap-field" style="margin-top:14px;"><label class="form-label">Description</label><input class="form-ctrl" id="e-desc" placeholder="e.g. Engine oil + filter"></div>
+    <div class="row-fields">
+      <div><label class="form-label">Amount (Rs.)</label><input class="form-ctrl" id="e-amount" type="number" placeholder="0"></div>
+      <div><label class="form-label">ODO at time (km)</label><input class="form-ctrl" id="e-odo" type="number" placeholder="Optional"></div>
+    </div>
+    <div class="gap-field" style="margin-top:14px;"><label class="form-label">Notes</label><textarea class="form-ctrl" id="e-notes" placeholder="Additional info..."></textarea></div>
+    <div style="margin-top:20px;display:flex;gap:10px;">
+      <button class="btn-accent" onclick="saveExpense()"><i class="bi bi-check-lg"></i> Save</button>
+      <button class="btn-ghost" onclick="closeModal('modal-expense')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ===== DATA LAYER (localStorage, swap for API calls later) =====
+const DB = {
+  get: k => { try { return JSON.parse(localStorage.getItem('mt_'+k)) || []; } catch { return []; }},
+  getObj: k => { try { return JSON.parse(localStorage.getItem('mt_'+k)) || {}; } catch { return {}; }},
+  set: (k,v) => localStorage.setItem('mt_'+k, JSON.stringify(v)),
+  push: (k,v) => { const a=DB.get(k); a.push(v); DB.set(k,a); },
+  del: (k,id) => { DB.set(k, DB.get(k).filter(x=>x.id!==id)); }
+};
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const fmt = n => 'Rs.'+(+n||0).toLocaleString();
+const fmtDate = d => d ? new Date(d+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}) : '—';
+
+// ===== NAVIGATION =====
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('page-'+el.dataset.page).classList.add('active');
+    if (el.dataset.page === 'reports') renderReports();
+  });
+});
+
+// ===== MODAL =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ===== TOAST =====
+function toast(msg, err=false) {
+  const w = document.getElementById('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast-msg'+(err?' err':'');
+  t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(()=>t.remove(), 3100);
+}
+
+// ===== BIKE =====
+function loadBike() {
+  const b = DB.getObj('bike');
+  document.getElementById('heroName').textContent = b.name || 'MY MOTORCYCLE';
+  document.getElementById('heroReg').textContent = b.reg || 'No Registration Set';
+  document.getElementById('heroModel').textContent = (b.make&&b.model) ? b.make+' '+b.model : '—';
+  document.getElementById('heroYear').textContent = b.year || '—';
+  document.getElementById('heroEngine').textContent = b.engine || '—';
+  document.getElementById('heroColor').textContent = b.color || '—';
+  document.getElementById('heroOdo').textContent = b.odo ? b.odo+' km' : '— km';
+  document.getElementById('topOdo').innerHTML = `<i class="bi bi-speedometer2"></i> ${b.odo||'—'} km`;
+  // stat: next service
+  if (b.nextsvc && b.odo) {
+    const rem = +b.nextsvc - +b.odo;
+    document.getElementById('statNextSvc').textContent = rem > 0 ? rem+' km' : 'OVERDUE';
+  }
+}
+function openBikeModal() {
+  const b = DB.getObj('bike');
+  ['name','make','model','year','engine','reg','color','odo','nextsvc','vin'].forEach(k=>{
+    const el = document.getElementById('b-'+k);
+    if(el) el.value = b[k]||'';
+  });
+  openModal('modal-bike');
+}
+function saveBike() {
+  const b = {};
+  ['name','make','model','year','engine','reg','color','odo','nextsvc','vin'].forEach(k=>{
+    const el = document.getElementById('b-'+k);
+    if(el) b[k] = el.value.trim();
+  });
+  DB.set('bike',b);
+  loadBike();
+  closeModal('modal-bike');
+  toast('Bike info saved!');
+}
+document.querySelector('[onclick="openModal(\'modal-bike\')"]').onclick = openBikeModal;
+
+// ===== RENEWALS =====
+function daysUntil(dateStr) {
+  const d = new Date(dateStr+'T00:00:00');
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.ceil((d-now)/(1000*60*60*24));
+}
+function getRenewalClass(days) {
+  if (days < 0) return 'urgent';
+  if (days <= 30) return days <= 7 ? 'urgent' : 'soon';
+  return 'ok';
+}
+function getRenewalIcon(type) {
+  const icons = {
+    'Revenue Licence':'bi-card-text','Emission Test':'bi-wind','Insurance':'bi-shield-fill-check',
+    'Registration':'bi-file-earmark-text','VET / Safety Check':'bi-clipboard2-check','Other':'bi-bell'
+  };
+  return icons[type]||'bi-bell';
+}
+function saveRenewal() {
+  const type = document.getElementById('r-type').value;
+  const name = document.getElementById('r-name').value.trim() || type;
+  const due = document.getElementById('r-due').value;
+  const cost = document.getElementById('r-cost').value;
+  const notes = document.getElementById('r-notes').value.trim();
+  if (!due) { toast('Please set a due date', true); return; }
+  DB.push('renewals', { id: uid(), type, name, due, cost: +cost||0, notes });
+  closeModal('modal-renewal');
+  ['r-name','r-due','r-cost','r-notes'].forEach(id=>document.getElementById(id).value='');
+  renderRenewals(); renderDashboard();
+  toast('Renewal added!');
+}
+function deleteRenewal(id) {
+  if (!confirm('Delete this renewal?')) return;
+  DB.del('renewals',id);
+  renderRenewals(); renderDashboard();
+  toast('Renewal deleted');
+}
+function renderRenewals() {
+  const list = DB.get('renewals').sort((a,b)=>new Date(a.due)-new Date(b.due));
+  const el = document.getElementById('renewalList');
+  if (!list.length) { el.innerHTML = '<div class="empty-state"><i class="bi bi-calendar-x"></i><p>No renewals added yet. Click "+ Add Renewal".</p></div>'; return; }
+  el.innerHTML = list.map(r => {
+    const days = daysUntil(r.due);
+    const cls = getRenewalClass(days);
+    const label = days < 0 ? `Overdue by ${Math.abs(days)}d` : days === 0 ? 'Due TODAY' : `${days} days left`;
+    return `<div class="renewal-card ${cls} mb-3">
+      <div class="renewal-icon ${cls}"><i class="bi ${getRenewalIcon(r.type)}"></i></div>
+      <div class="renewal-info">
+        <div class="renewal-name">${r.name}</div>
+        <div class="renewal-date">Due: ${fmtDate(r.due)} ${r.cost ? '· '+fmt(r.cost) : ''}</div>
+        ${r.notes ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">'+r.notes+'</div>' : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <span class="countdown-badge ${cls}">${label}</span>
+        <button class="btn-danger-ghost" onclick="deleteRenewal('${r.id}')"><i class="bi bi-trash3"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== SERVICES =====
+function saveService() {
+  const date = document.getElementById('s-date').value;
+  const odo = document.getElementById('s-odo').value;
+  const type = document.getElementById('s-type').value;
+  const shop = document.getElementById('s-shop').value.trim();
+  const labour = +document.getElementById('s-labour').value||0;
+  const parts = +document.getElementById('s-parts').value||0;
+  const nextodo = document.getElementById('s-nextodo').value;
+  const notes = document.getElementById('s-notes').value.trim();
+  if (!date||!odo) { toast('Date and ODO reading are required', true); return; }
+  DB.push('services', { id: uid(), date, odo: +odo, type, shop, labour, parts, total: labour+parts, nextodo: nextodo?+nextodo:null, notes });
+  // update bike nextsvc
+  if (nextodo) { const b=DB.getObj('bike'); b.nextsvc=+nextodo; DB.set('bike',b); loadBike(); }
+  closeModal('modal-service');
+  ['s-date','s-odo','s-shop','s-labour','s-parts','s-nextodo','s-notes'].forEach(id=>document.getElementById(id).value='');
+  renderServices(); renderDashboard();
+  toast('Service record added!');
+}
+function deleteService(id) {
+  if (!confirm('Delete this service record?')) return;
+  DB.del('services',id);
+  renderServices(); renderDashboard();
+  toast('Service deleted');
+}
+function renderServices() {
+  const list = DB.get('services').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const el = document.getElementById('serviceTableWrap');
+  const pill = document.getElementById('lastSvcInfo');
+  if (!list.length) {
+    el.innerHTML='<div class="empty-state"><i class="bi bi-tools"></i><p>No service records. Add your first one!</p></div>';
+    pill.style.display='none'; return;
+  }
+  pill.style.display='inline-flex';
+  document.getElementById('lastSvcKm').textContent = list[0].odo.toLocaleString();
+  el.innerHTML=`<table class="moto-table">
+    <thead><tr><th>Date</th><th>Type</th><th>Workshop</th><th>ODO</th><th>Labour</th><th>Parts</th><th>Total</th><th></th></tr></thead>
+    <tbody>${list.map(s=>`<tr>
+      <td>${fmtDate(s.date)}</td>
+      <td>${s.type}</td>
+      <td>${s.shop||'—'}</td>
+      <td><span class="odo-badge">${s.odo.toLocaleString()} km</span></td>
+      <td>${fmt(s.labour)}</td>
+      <td>${fmt(s.parts)}</td>
+      <td style="font-weight:600;color:var(--accent2)">${fmt(s.total)}</td>
+      <td><button class="btn-danger-ghost" onclick="deleteService('${s.id}')"><i class="bi bi-trash3"></i></button></td>
+    </tr>${s.notes?`<tr><td colspan="8" style="background:var(--surface);padding:6px 14px;font-size:12px;color:var(--muted);border-radius:0!important;">📝 ${s.notes}</td></tr>`:''}`).join('')}</tbody>
+  </table>`;
+}
+
+// ===== EXPENSES =====
+function saveExpense() {
+  const date = document.getElementById('e-date').value;
+  const cat = document.getElementById('e-cat').value;
+  const desc = document.getElementById('e-desc').value.trim();
+  const amount = +document.getElementById('e-amount').value||0;
+  const odo = document.getElementById('e-odo').value;
+  const notes = document.getElementById('e-notes').value.trim();
+  if (!date||!desc) { toast('Date and description are required', true); return; }
+  DB.push('expenses', { id: uid(), date, cat, desc, amount, odo: odo?+odo:null, notes });
+  closeModal('modal-expense');
+  ['e-date','e-desc','e-amount','e-odo','e-notes'].forEach(id=>document.getElementById(id).value='');
+  renderExpenses(); renderDashboard();
+  toast('Expense added!');
+}
+function deleteExpense(id) {
+  if(!confirm('Delete this expense?')) return;
+  DB.del('expenses',id);
+  renderExpenses(); renderDashboard();
+  toast('Expense deleted');
+}
+const catLabel = { service:'Service/Labour', parts:'Parts', fuel:'Fuel', other:'Other' };
+const catCls = { service:'exp-service', parts:'exp-parts', fuel:'exp-fuel', other:'exp-other' };
+function renderExpenses() {
+  const list = DB.get('expenses').sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const total = list.reduce((s,x)=>s+x.amount,0);
+  document.getElementById('expTotal2').textContent = fmt(total);
+  const el = document.getElementById('expenseTableWrap');
+  if (!list.length) { el.innerHTML='<div class="empty-state"><i class="bi bi-wallet2"></i><p>No expenses recorded yet</p></div>'; return; }
+  el.innerHTML=`<table class="moto-table">
+    <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>ODO</th><th>Amount</th><th></th></tr></thead>
+    <tbody>${list.map(e=>`<tr>
+      <td>${fmtDate(e.date)}</td>
+      <td><span class="exp-category ${catCls[e.cat]}">${catLabel[e.cat]}</span></td>
+      <td>${e.desc}${e.notes?`<div style="font-size:11px;color:var(--muted)">${e.notes}</div>`:''}</td>
+      <td>${e.odo?`<span class="odo-badge">${e.odo.toLocaleString()} km</span>`:'—'}</td>
+      <td style="font-weight:600;color:var(--accent2)">${fmt(e.amount)}</td>
+      <td><button class="btn-danger-ghost" onclick="deleteExpense('${e.id}')"><i class="bi bi-trash3"></i></button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  const services = DB.get('services');
+  const expenses = DB.get('expenses');
+  const renewals = DB.get('renewals');
+  // stats
+  document.getElementById('statServices').textContent = services.length;
+  const totalSpent = expenses.reduce((s,x)=>s+x.amount,0);
+  document.getElementById('statTotal').textContent = fmt(totalSpent);
+  const dueCount = renewals.filter(r=>daysUntil(r.due)<=30).length;
+  document.getElementById('statRenewDue').textContent = dueCount;
+  // dash renewals (top 3)
+  const sorted = [...renewals].sort((a,b)=>new Date(a.due)-new Date(b.due)).slice(0,3);
+  const dEl = document.getElementById('dashRenewals');
+  if (!sorted.length) { dEl.innerHTML='<div class="empty-state"><i class="bi bi-calendar-x"></i><p>No renewals added yet</p></div>'; }
+  else {
+    dEl.innerHTML = sorted.map(r=>{
+      const days=daysUntil(r.due); const cls=getRenewalClass(days);
+      const label = days<0?`Overdue ${Math.abs(days)}d`:days===0?'TODAY!':days+'d';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div class="renewal-icon ${cls}" style="width:32px;height:32px;font-size:1rem;"><i class="bi ${getRenewalIcon(r.type)}"></i></div>
+        <div style="flex:1;"><div style="font-size:14px;font-weight:600;">${r.name}</div><div style="font-size:12px;color:var(--muted);">${fmtDate(r.due)}</div></div>
+        <span class="countdown-badge ${cls}">${label}</span>
+      </div>`;
+    }).join('');
+  }
+  // dash services (top 3)
+  const sEl = document.getElementById('dashServices');
+  const slist = [...services].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+  if (!slist.length) { sEl.innerHTML='<div class="empty-state"><i class="bi bi-tools"></i><p>No service records yet</p></div>'; }
+  else {
+    sEl.innerHTML = slist.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div style="width:32px;height:32px;border-radius:8px;background:var(--accent-glow);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:1rem;"><i class="bi bi-wrench"></i></div>
+      <div style="flex:1;"><div style="font-size:14px;font-weight:600;">${s.type}</div><div style="font-size:12px;color:var(--muted);">${fmtDate(s.date)} · ${s.odo.toLocaleString()} km</div></div>
+      <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent2);">${fmt(s.total)}</span>
+    </div>`).join('');
+  }
+}
+
+// ===== REPORTS =====
+function renderReports() {
+  const expenses = DB.get('expenses');
+  const services = DB.get('services');
+  const renewals = DB.get('renewals');
+  // Expense breakdown (donut-like rings)
+  const cats = ['service','parts','fuel','other'];
+  const catColors = { service: 'var(--info)', parts: 'var(--accent)', fuel: 'var(--warning)', other: 'var(--muted)' };
+  const totals = {};
+  const grand = expenses.reduce((s,x)=>s+x.amount,0);
+  cats.forEach(c=>totals[c]=expenses.filter(x=>x.cat===c).reduce((s,x)=>s+x.amount,0));
+  const bEl = document.getElementById('expBreakdown');
+  if (!expenses.length) { bEl.innerHTML='<div class="empty-state" style="width:100%"><i class="bi bi-wallet2"></i><p>No expense data</p></div>'; }
+  else {
+    bEl.innerHTML = cats.map(c=>{
+      const pct = grand ? Math.round(totals[c]/grand*100) : 0;
+      const r=36, circ=2*Math.PI*r;
+      const dash=pct/100*circ; const gap=circ-dash;
+      return `<div style="text-align:center;">
+        <div class="ring-wrap"><svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="${r}" fill="none" stroke="var(--surface3)" stroke-width="8"/>
+          <circle cx="40" cy="40" r="${r}" fill="none" stroke="${catColors[c]}" stroke-width="8"
+            stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-linecap="round"/>
+        </svg>
+        <div class="ring-text">${pct}%<small>${catLabel[c]}</small></div></div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-top:4px;">${fmt(totals[c])}</div>
+      </div>`;
+    }).join('');
+  }
+  // Monthly chart (last 6 months)
+  const mEl = document.getElementById('monthlyChart');
+  const months = [];
+  for (let i=5;i>=0;i--) {
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    months.push({ key: d.toISOString().slice(0,7), label: d.toLocaleDateString('en',{month:'short'}) });
+  }
+  const monthData = months.map(m=>({
+    label: m.label,
+    val: expenses.filter(e=>e.date&&e.date.startsWith(m.key)).reduce((s,x)=>s+x.amount,0)
+  }));
+  const maxVal = Math.max(...monthData.map(m=>m.val), 1);
+  if (!expenses.length) { mEl.innerHTML='<div class="empty-state"><i class="bi bi-graph-up"></i><p>No expense data</p></div>'; }
+  else {
+    mEl.innerHTML=`<div class="chart-bar-wrap">${monthData.map(m=>{
+      const h = Math.round(m.val/maxVal*90)+4;
+      return `<div class="chart-bar-col">
+        <div class="chart-bar-val">${m.val?fmt(m.val):''}</div>
+        <div class="chart-bar" style="height:${h}px;" title="${fmt(m.val)}"></div>
+        <div class="chart-bar-label">${m.label}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+  // Service summary
+  const ssEl = document.getElementById('svcSummary');
+  if (!services.length) { ssEl.innerHTML='<div class="empty-state"><i class="bi bi-tools"></i><p>No service data</p></div>'; }
+  else {
+    const sList = [...services].sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const totalSvcCost = sList.reduce((s,x)=>s+x.total,0);
+    const avgCost = Math.round(totalSvcCost/sList.length);
+    ssEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div class="stat-box"><div class="stat-label">Total Records</div><div class="stat-val">${sList.length}</div></div>
+      <div class="stat-box info"><div class="stat-label">Total Cost</div><div class="stat-val" style="font-size:1.1rem;">${fmt(totalSvcCost)}</div></div>
+      <div class="stat-box success"><div class="stat-label">Avg. Cost</div><div class="stat-val" style="font-size:1.1rem;">${fmt(avgCost)}</div></div>
+      <div class="stat-box warning"><div class="stat-label">Last Service</div><div class="stat-val" style="font-size:1rem;">${fmtDate(sList[0].date)}</div></div>
+    </div>`;
+  }
+  // Renewal summary
+  const rnEl = document.getElementById('renewSummary');
+  if (!renewals.length) { rnEl.innerHTML='<div class="empty-state"><i class="bi bi-shield-x"></i><p>No renewal data</p></div>'; }
+  else {
+    rnEl.innerHTML = renewals.sort((a,b)=>new Date(a.due)-new Date(b.due)).map(r=>{
+      const days=daysUntil(r.due); const cls=getRenewalClass(days);
+      const label = days<0?`Overdue ${Math.abs(days)}d`:days===0?'TODAY!':days+' days';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);">
+        <i class="bi ${getRenewalIcon(r.type)}" style="color:var(--${cls==='ok'?'success':cls==='soon'?'warning':'danger'});font-size:1.2rem;width:20px;"></i>
+        <div style="flex:1;font-size:14px;">${r.name}<div style="font-size:12px;color:var(--muted)">${fmtDate(r.due)}</div></div>
+        <span class="countdown-badge ${cls}">${label}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ===== INIT =====
+function init() {
+  loadBike();
+  renderDashboard();
+  renderRenewals();
+  renderServices();
+  renderExpenses();
+  // set today as default date in modals
+  const today = new Date().toISOString().slice(0,10);
+  ['r-due','s-date','e-date'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el&&!el.value) el.value=today;
+  });
+}
+init();
+</script>
+</body>
+</html>
